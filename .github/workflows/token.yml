@@ -11,8 +11,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          repository: ${{github.repository}}.wiki.git
-          token: ${{ secrets.TOKEN }}
+          repository: ${{github.repository}}.wiki
+          token: ${{ github.token }}
 
       - name: Configure AWS credentials from shared account
         uses: aws-actions/configure-aws-credentials@v1

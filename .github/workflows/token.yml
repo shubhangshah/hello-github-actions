@@ -1,9 +1,6 @@
 name: Create Key
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: "0 */6 * * *"
+on: push
 
 jobs:
   get_key:

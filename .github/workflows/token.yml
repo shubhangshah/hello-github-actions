@@ -1,0 +1,47 @@
+name: Create Key
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *"
+
+jobs:
+  get_key:
+    runs-on: "ubuntu-latest"
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: ${{github.repository}}.wiki
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure AWS credentials from shared account
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: ${{ secrets.SHARED_SERVICES_AWS_DEPLOY_ROLE }}
+          aws-region: us-east-1
+
+      - name: Generate code artifact token
+        run: |
+          CODEARTIFACT_AUTH_TOKEN=`aws codeartifact get-authorization-token --domain titanglobal-pypi-domain --domain-owner 355839232197 --query authorizationToken --output text`
+          touch PrivatePiPyToken.md
+          echo $CODEARTIFACT_AUTH_TOKEN
+          echo "Latest Repo Token" > PrivatePiPyToken.md
+          echo "" >> PrivatePiPyToken.md
+          echo "<pre>" >> PrivatePiPyToken.md
+          echo "${CODEARTIFACT_AUTH_TOKEN}" >> PrivatePiPyToken.md
+          echo "</pre>" >> PrivatePiPyToken.md
+      - name: setup git config
+        run: |
+          # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+
+      - name: commit
+        run: |
+          # Stage the file, commit and push
+          git add PrivatePiPyToken.md
+          git commit -m "Added new token"
+          git push origin master
